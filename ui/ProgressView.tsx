@@ -61,7 +61,19 @@ function formatContent(content: string | undefined, streamer: boolean) {
 }
 
 function formatLogLine(entry: LogEntry, streamer: boolean) {
-    if (entry.status === "info") return `[${entry.timestamp}] ${entry.content || ""}`;
+    if (entry.status === "info") {
+        if (!streamer) return `[${entry.timestamp}] ${entry.content || ""}`;
+        const hasLocation = entry.guildName || entry.channelName || entry.username;
+        if (!hasLocation) return `[${entry.timestamp}] ${entry.content || ""}`;
+        const loc = formatLocation(entry, true);
+        const redacted = (entry.content || "").replace(
+            entry.username
+                ? `DM > ${entry.username}`
+                : `${entry.guildName || "???"} > #${entry.channelName || "???"}`,
+            loc
+        );
+        return `[${entry.timestamp}] ${redacted}`;
+    }
 
     const loc = formatLocation(entry, streamer);
     const content = formatContent(entry.content, streamer);

@@ -108,8 +108,8 @@ function formatEta(ms: number): string {
     return `${hours}h ${mins}m`;
 }
 
-function infoLog(ctrl: DeletionController, msg: string) {
-    const entry: LogEntry = { timestamp: now(), status: "info", content: msg };
+function infoLog(ctrl: DeletionController, msg: string, location?: Pick<LogEntry, "guildName" | "guildId" | "channelName" | "channelId" | "username" | "userId">) {
+    const entry: LogEntry = { timestamp: now(), status: "info", content: msg, ...location };
     ctrl.updateProgress(p => ({ ...p, logs: [...p.logs, entry] }));
 }
 
@@ -264,8 +264,22 @@ async function deleteChannelMessages(
     let channelDeleted = 0;
     const channelStart = Date.now();
 
+    const channel = ChannelStore.getChannel(channelId);
+    const guild = guildId ? GuildStore.getGuild(guildId) : null;
+    const isDM = !guildId;
+    const loc: Pick<LogEntry, "guildName" | "guildId" | "channelName" | "channelId" | "username" | "userId"> = {
+        channelId,
+        ...(isDM && channel?.recipients?.[0] ? (() => {
+            const recipientId = channel.recipients[0];
+            const user = UserStore.getUser(recipientId);
+            return { username: user?.globalName || user?.username || recipientId, userId: recipientId };
+        })() : {}),
+        ...(guild ? { guildName: guild.name, guildId: guild.id } : {}),
+        ...(channel?.name ? { channelName: channel.name } : {}),
+    };
+
     ctrl.updateProgress(p => ({ ...p, currentChannel: channelLabel, channelEta: null }));
-    infoLog(ctrl, `Searching ${channelLabel}...`);
+    infoLog(ctrl, `Searching ${channelLabel}...`, loc);
 
     while (!ctrl.isStopped()) {
         await waitWhilePaused(ctrl);
@@ -292,7 +306,7 @@ async function deleteChannelMessages(
                 continue;
             }
             logger.error("Search error", { status, err });
-            infoLog(ctrl, `Search error (${status ?? "unknown"}), skipping ${channelLabel}.`);
+            infoLog(ctrl, `Search error (${status ?? "unknown"}), skipping ${channelLabel}.`, loc);
             break;
         }
 
@@ -303,7 +317,7 @@ async function deleteChannelMessages(
                 await sleep(delays.searchDelay);
                 continue;
             }
-            infoLog(ctrl, `No more messages in ${channelLabel}.`);
+            infoLog(ctrl, `No more messages in ${channelLabel}.`, loc);
             break;
         }
 
