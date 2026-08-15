@@ -2,7 +2,7 @@
 
 > **Disclaimer:** Any tool that automates actions on user accounts, including this one, may violate Discord's Terms of Service and could result in account suspension or termination. Use at your own risk. See [LEGAL.md](LEGAL.md) for full details.
 
-An [Equicord](https://github.com/Equicord/Equicord) plugin that lets you bulk-delete your own Discord messages from a floating panel. Works across guilds, channels, and direct messages.
+A [Vencord](https://github.com/Vendicated/Vencord) / [Equicord](https://github.com/Equicord/Equicord) plugin that lets you bulk-delete your own Discord messages from a floating panel. Works across guilds, channels, and direct messages.
 
 ## Features
 
@@ -23,7 +23,7 @@ An [Equicord](https://github.com/Equicord/Equicord) plugin that lets you bulk-de
 
 ## Installation
 
-You need to build Equicord from source. The plugin goes in `src/userplugins/`, which is the designated location for personal plugins that aren't tracked by Equicord's git.
+You need to build Vencord or Equicord from source. The plugin goes in `src/userplugins/`, which is the designated location for personal plugins that aren't tracked by git.
 
 ### Prerequisites
 
@@ -31,11 +31,17 @@ You need to build Equicord from source. The plugin goes in `src/userplugins/`, w
 - [Node.js](https://nodejs.org) 22 or later
 - [pnpm](https://pnpm.io) (enable via `corepack enable`)
 
-### Step 1: Clone Equicord
+### Step 1: Clone Vencord or Equicord
 
-If you haven't already, clone the Equicord repo and install dependencies:
+If you haven't already, clone the repo and install dependencies:
 
 ```sh
+# Vencord
+git clone https://github.com/Vendicated/Vencord.git
+cd Vencord
+pnpm install
+
+# or Equicord
 git clone https://github.com/Equicord/Equicord.git
 cd Equicord
 pnpm install
@@ -54,12 +60,12 @@ git clone https://github.com/max/rmcord.git
 The plugin must be in its own folder with an `index.tsx` entry point. The final path should look like:
 
 ```
-Equicord/src/userplugins/rmcord/index.tsx
+Vencord/src/userplugins/rmcord/index.tsx
 ```
 
 ### Step 3: Build and restart
 
-Build Equicord from the repo root:
+Build from the repo root:
 
 ```sh
 cd ../..
@@ -80,7 +86,7 @@ Then load the unpacked extension from `dist/chromium-unpacked` (Chrome/Edge) or 
 
 ### Updating the plugin
 
-Equicord's `git pull` doesn't update user plugins. To update rmcord:
+`git pull` doesn't update user plugins. To update rmcord:
 
 ```sh
 cd src/userplugins/rmcord
@@ -98,7 +104,6 @@ Then restart Discord.
 Follow the same installation steps above, then use the watch build for faster iteration:
 
 ```sh
-cd Equicord
 pnpm buildWeb --watch
 ```
 
@@ -152,7 +157,7 @@ It redacts guild names, channel names, usernames, and message content from the p
 
 Open an issue on the [Issues](../../issues) page with:
 
-- Equicord version and branch
+- Vencord/Equicord version and branch
 - Steps to reproduce
 - Screenshots, a recording, or console output (`Ctrl+Shift+I` > Console, filter by "rmcord")
 

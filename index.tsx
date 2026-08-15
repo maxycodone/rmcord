@@ -6,9 +6,10 @@
 
 import "./styles.css";
 
-import { ChannelToolbarButton } from "@api/HeaderBar";
+import ErrorBoundary from "@components/ErrorBoundary";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
+import { findComponentByCodeLazy } from "@webpack";
 import { useCallback, useEffect, useRef, useState } from "@webpack/common";
 
 import { CloseIcon, TrashIcon } from "./ui/components/icons";
@@ -19,6 +20,7 @@ import { ImportTab } from "./ui/ImportTab";
 import { ProgressState, ProgressView } from "./ui/ProgressView";
 import { defaultFilters, DeletionController, FilterConfig, runDeletion } from "./utils";
 
+const HeaderBarIcon = findComponentByCodeLazy(".HEADER_BAR_BADGE_BOTTOM,", 'position:"bottom"');
 const logger = new Logger("rmcord", "#5865f2");
 
 type Tab = "guilds" | "direct-messages" | "import";
@@ -315,14 +317,14 @@ function Panel({ onClose }: { onClose: () => void; }) {
     );
 }
 
-function ToolbarIcon({ size, color }: { size?: string | number; color?: string; }) {
+function ToolbarIcon() {
     const pct = globalProgress && globalProgress.total > 0
         ? Math.round((globalProgress.deleted / globalProgress.total) * 100)
         : null;
 
     return (
         <div className="rmcord-toolbar-icon">
-            <TrashIcon size={size} color={color} />
+            <TrashIcon />
             {pct !== null && (
                 <div className="rmcord-toolbar-progress">
                     <div className="rmcord-toolbar-progress-fill" style={{ width: `${pct}%` }} />
@@ -359,10 +361,11 @@ function ToolbarButton() {
 
     return (
         <>
-            <ChannelToolbarButton
-                icon={ToolbarIcon}
-                tooltip={tooltip}
+            <HeaderBarIcon
+                className="rmcord-header-btn"
                 onClick={() => setOpen(!open)}
+                tooltip={tooltip}
+                icon={() => <ToolbarIcon />}
                 selected={open}
             />
             {open && <Panel onClose={() => setOpen(false)} />}
@@ -374,11 +377,25 @@ export default definePlugin({
     name: "rmcord",
     description: "Bulk delete your Discord messages from a floating panel",
     authors: [{ name: "max", id: 0n }],
-    dependencies: ["HeaderBarAPI"],
 
-    headerBarButton: {
-        icon: TrashIcon,
-        render: () => <ToolbarButton />,
-        location: "channeltoolbar" as const,
+    patches: [
+        {
+            find: '?"BACK_FORWARD_NAVIGATION":',
+            replacement: {
+                match: /(trailing:.{0,50}?)\i\.Fragment,(?=\{children:\[)/,
+                replace: "$1$self.TrailingWrapper,"
+            },
+        }
+    ],
+
+    TrailingWrapper({ children }: { children: React.ReactNode; }) {
+        return (
+            <>
+                {children}
+                <ErrorBoundary noop>
+                    <ToolbarButton />
+                </ErrorBoundary>
+            </>
+        );
     },
 });
