@@ -54,7 +54,7 @@ Create the `userplugins` directory if it doesn't exist, then clone this repo int
 ```sh
 mkdir -p src/userplugins
 cd src/userplugins
-git clone https://github.com/max/rmcord.git
+git clone https://github.com/maxycodone/rmcord.git
 ```
 
 The plugin must be in its own folder with an `index.tsx` entry point. The final path should look like:
